@@ -1,0 +1,77 @@
+<script>
+    var map;
+    var total_trips = 0
+    var markers = [];
+    function initMap() {
+        map = new google.maps.Map(document.getElementById('map'), {
+            zoom: 12,
+            center: {lat: 40.769, lng: -73.954}
+        });
+        // map.data.loadGeoJson('http://localhost:8005/api/geojson');
+
+        var drawingManager = new google.maps.drawing.DrawingManager({
+            drawingMode: google.maps.drawing.OverlayType.MARKER,
+            drawingControl: true,
+            drawingControlOptions: {
+                position: google.maps.ControlPosition.TOP_CENTER,
+                drawingModes: ['polygon']
+            },
+            markerOptions: {
+                icon: 'https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png'
+            },
+        });
+        drawingManager.setMap(map);
+
+        google.maps.event.addListener(drawingManager, 'polygoncomplete', function(polygon) {
+            var coordinates = (polygon.getPath().getArray());
+
+            $.getJSON( "http://localhost:8005/api/trips", function( data ) {
+                
+                for (i = 0; i < data.trips.length; i++) { 
+
+                    var pickup_point = new google.maps.LatLng(data.trips[i].pickup[1], data.trips[i].pickup[0]);
+                    var dropoff_point = new google.maps.LatLng(data.trips[i].dropoff[1], data.trips[i].dropoff[0]);
+                    
+                    if(google.maps.geometry.poly.containsLocation(pickup_point, polygon) && google.maps.geometry.poly.containsLocation(dropoff_point, polygon)){
+                        var pickup_marker = new google.maps.Marker({
+                            position: pickup_point,
+                            icon: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png',
+                            category: data.trips[i].time,
+                            map: map
+                        });
+
+                        var dropoff_marker = new google.maps.Marker({
+                            position: dropoff_point,
+                            icon: 'http://maps.google.com/mapfiles/ms/icons/green-dot.png',
+                            category: data.trips[i].time,
+                            map: map
+                        });
+
+                        markers.push(pickup_marker);
+                        markers.push(dropoff_marker);
+
+                        total_trips = total_trips + 1;
+                    }
+                }
+
+                $('#total').text(total_trips);
+                $('#labels').show();
+                $('#chart').hide();
+                $('#filter_time').show();
+            });
+        });
+    }
+    filterMarkers = function (category) {
+        for (i = 0; i < total_trips * 2; i++) {
+            marker = markers[i];
+            if (marker.category == category || category.length === 0) {
+                marker.setVisible(true);
+            }
+            else {
+                marker.setVisible(false);
+            }
+        }
+    }
+</script>
+<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCv2kIi654g_sa36wBzenqxGWY2LzDu148&libraries=drawing,geometry&callback=initMap">
+</script>

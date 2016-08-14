@@ -1,0 +1,129 @@
+{% load static from staticfiles %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+
+<head>
+	{% block meta %}
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+    {% endblock meta %}
+
+    <title>
+        {% block pagetitle %} Uber {% endblock pagetitle %}
+    </title>
+
+    <meta name="description" content="Uber data" /> 
+
+    {% block css %}
+        <link rel="stylesheet" href="{% static 'vendors/bootstrap/css/bootstrap.min.css' %}" />
+        <link rel="stylesheet" href="{% static 'css/custom.css' %}" />
+    {% endblock css %}
+
+    {% block head_js %}
+        <script src="{% static 'vendors/jquery/jquery-2.2.3.min.js' %}"></script>
+    {% endblock head_js%}
+
+</head>
+
+<body>
+
+	<div class="container" role="main">
+        {% block header %}
+            <div class="row header">
+            </div>
+        {% endblock header %}
+
+		{% block page_content %}
+            <div class="row">
+                <div class="col-sm-12 col-md-8 col-md-offset-2 text-center">
+                    <h1>Uber Data Analyzer </h1>
+                    <p>The data is from April 2014 to Sep 2014 from New York</p>
+                    <p>To dig deeper select a region in the map with the help of the draw tool.</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-12 col-md-8">
+
+                    <select id="filter_time" onchange="filterMarkers(this.value);">
+                        <option value="">Please select category</option>
+                        <option value="morning">Morning (6am to 11:59am)</option>
+                        <option value="afternoon">Afternoon (12pm to 3:59pm)</option>
+                        <option value="evening">Evening (4pm to 8:59pm)</option>
+                        <option value="night">Night (9pm to 5:59am)</option>
+                    </select>
+                    <div id="map"></div>
+                    {% include 'geoanalyzer/partials/_google_map_js.html' %}
+                </div>
+                <div class="col-sm-12 col-md-4">
+                    <h3>Total number of trips: <span id="total">{{ total_trips }}</span></h3>
+
+                    <div id="labels">
+                        <h4>Labels</h4>
+                        <img src="http://maps.google.com/mapfiles/ms/icons/red-dot.png" /> Pickup Points
+                        <img src="http://maps.google.com/mapfiles/ms/icons/green-dot.png" /> Dropoff Points
+                    </div>
+
+                    <div id="chart"></div>
+                    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+                    <script type="text/javascript">
+                    google.charts.load('current', {packages: ['corechart', 'bar']});
+                    google.charts.setOnLoadCallback(drawBasic);
+
+                    function drawBasic() {
+                        var chart_data = [
+                            ['Month', 'Uber Trips',],
+                        ]
+
+                        $.getJSON( "http://localhost:8005/api/trips_by_month", function(data) {
+                            for (i = 0; i < data.data.length; i++) { 
+                                each_month = [data.data[i]['month'], data.data[i]['count']]
+                                chart_data.push(each_month);
+                            }
+                        
+                            var data = google.visualization.arrayToDataTable(chart_data);
+
+                            var options = {
+                                title: 'Trip per month',
+                                chartArea: {width: '60%'},
+                                hAxis: {
+                                    title: 'Total Trips',
+                                    minValue: 0
+                                }
+                            };
+
+                            var chart = new google.visualization.BarChart(document.getElementById('chart'));
+                            chart.draw(data, options);
+                        });
+                    }
+                    </script>
+                </div>
+            </div>
+
+		{% endblock page_content %}
+
+        <div class="row footer">
+        </div>
+
+    </div>
+    
+    {% block shared_js %}
+    	<script src="{% static 'vendors/bootstrap/js/bootstrap.min.js' %}"></script>
+    {% endblock shared_js %}
+
+    {% block last_js %}
+
+    <script type="text/javascript">
+        $('document').ready(function(){
+            $('#labels').hide();
+            $('#filter_time').hide();
+        });
+    </script>
+
+	{% endblock last_js %}
+</body>
+
+
+</html>

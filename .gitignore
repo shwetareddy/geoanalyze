@@ -1,0 +1,8 @@
+.DS_Store
+db.sqlite3
+.venv/
+*.pyc
+*.egg-info
+/staticfiles/
+/static/
+media/
