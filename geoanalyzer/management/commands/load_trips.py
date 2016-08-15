@@ -24,6 +24,8 @@ class Command(BaseCommand):
 
 			for row in filereader:
 				nextrow = filereader.next()
+				while row[1] == nextrow[1] and row[2] == nextrow[2]:
+					nextrow = filereader.next()
 				date_object = datetime.strptime(row[0], '%m/%d/%Y %H:%M:%S')
 				if nextrow:
 					trip = Trip(

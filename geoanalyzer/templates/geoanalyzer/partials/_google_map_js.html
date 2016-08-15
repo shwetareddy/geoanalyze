@@ -35,7 +35,7 @@
                 lats.push(coordinates[i].lat());
                 lngs.push(coordinates[i].lng());
             }
-
+            console.log("http://localhost:8005/api/trips?north="+Math.max(...lats)+"&south="+Math.min(...lats)+"&east="+Math.max(...lngs)+"&west="+Math.min(...lngs));
             $.getJSON( "http://localhost:8005/api/trips?north="+Math.max(...lats)+"&south="+Math.min(...lats)+"&east="+Math.max(...lngs)+"&west="+Math.min(...lngs), function( data ) {
 
                 for (i = 0; i < data.trips.length; i++) { 
@@ -46,7 +46,7 @@
                     var dropoff_point = new google.maps.LatLng(data.trips[i].dropoff[1], data.trips[i].dropoff[0]);
                     
                     if(google.maps.geometry.poly.containsLocation(pickup_point, polygon) && google.maps.geometry.poly.containsLocation(dropoff_point, polygon)){
-                        
+                        console.log('p-lat:'+ data.trips[i].pickup[1]+', lng: '+data.trips[i].pickup[0]);
                         var pickup_marker = new google.maps.Marker({
                             position: pickup_point,
                             icon: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png',
@@ -65,17 +65,18 @@
                                 markers[j]['pickup_count']++;
                             }
                         }
-                        
+                        console.log(pickup_dup_flg+"pickup flg");
                         markers.push(pickup_marker);
                         if(pickup_dup_flg == 0){
+                            console.log("pick");
                             unique_markers.push(pickup_marker);
                         }
-
+                        console.log('d-lat:'+ data.trips[i].dropoff[1]+', lng: '+data.trips[i].dropoff[0]);
                         var dropoff_marker = new google.maps.Marker({
                             position: dropoff_point,
                             icon: 'http://maps.google.com/mapfiles/ms/icons/green-dot.png',
                             time: data.trips[i].time,
-                            center: {lat: data.trips[i].pickup[1], lng: data.trips[i].pickup[0]},
+                            center: {lat: data.trips[i].dropoff[1], lng: data.trips[i].dropoff[0]},
                             pickup_count: 0,
                             dropoff_count: 1,
                             map: map
@@ -88,8 +89,10 @@
                                 markers[k]['dropoff_count']++;
                             }
                         }
+                        console.log(dropoff_dup_flg+"drop flg");
                         markers.push(dropoff_marker);
                         if(dropoff_dup_flg == 0){
+                            console.log('in drop');
                             unique_markers.push(dropoff_marker);
                         }
 
