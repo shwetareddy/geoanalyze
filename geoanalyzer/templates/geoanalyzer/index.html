@@ -39,9 +39,9 @@
 		{% block page_content %}
             <div class="row">
                 <div class="col-sm-12 col-md-8 col-md-offset-2 text-center">
-                    <h1>Uber Data Analyzer </h1>
+                    <!-- <h1>Uber Data Analyzer </h1>
                     <p>The data is from April 2014 to Sep 2014 from New York</p>
-                    <p>To dig deeper select a region in the map with the help of the draw tool.</p>
+                    <p>To dig deeper select a region in the map with the help of the draw tool.</p> -->
                 </div>
             </div>
             <div class="row">
@@ -62,24 +62,18 @@
                         <img src="http://maps.google.com/mapfiles/ms/icons/blue-dot.png" /> Pickup and Dropoff Points
                     </div>
 
-                    <div id="filter_time">
+                    <div id="filter">
                         <h4>Filters</h4>
-                        <select id="select_time" onchange="filterMarkers(this.value);">
-                            <option value="">Please select category</option>
-                            <option value="morning">Morning (6am to 11:59am)</option>
-                            <option value="afternoon">Afternoon (12pm to 3:59pm)</option>
-                            <option value="evening">Evening (4pm to 8:59pm)</option>
-                            <option value="night">Night (9pm to 5:59am)</option>
-                        </select>
-
-                        <h4>Common Pickups and Dropoffs</h4>
-                        <select id="common" onchange="bubbleMap(this.value);">
-                            <option value="">Please select category</option>
-                            <option value="pickup">Most Common Pickups</option>
-                            <option value="dropoff">Most Comman drop offs</option>
-                        </select>
-
-                        <button class="btn btn-primary">Reset</button>
+                        <h5>Select any of the views</h5>
+                        <input type="radio" name="filters" value="morning" onclick="filterMarkers(this.value);"> Morning (6am to 11:59am)<br>
+                        <input type="radio" name="filters" value="afternoon" onclick="filterMarkers(this.value);"> Afternoon (12pm to 3:59pm)<br>
+                        <input type="radio" name="filters" value="evening" onclick="filterMarkers(this.value);"> Evening (4pm to 8:59pm)<br>
+                        <input type="radio" name="filters" value="night" onclick="filterMarkers(this.value);"> Night (9pm to 5:59am)<br>
+                        <input type="radio" name="filters" value="pickup" onclick="bubbleMap(this.value);"> Most Common Pickups<br>
+                        <input type="radio" name="filters" value="dropoff" onclick="bubbleMap(this.value);"> Most Comman drop offs<br>
+                    </div>
+                    <div class="col-sm-12 col-md-4">
+                        <a href="/" class="btn btn-primary" id="reset">New Search</a>
                     </div>
 
                     <div id="chart"></div>
@@ -93,7 +87,7 @@
                             ['Month', 'Uber Trips',],
                         ]
 
-                        $.getJSON( "http://localhost:8005/api/trips_by_month", function(data) {
+                        $.getJSON( "/api/trips_by_month", function(data) {
                             for (i = 0; i < data.data.length; i++) { 
                                 each_month = [data.data[i]['month'], data.data[i]['count']]
                                 chart_data.push(each_month);
@@ -135,7 +129,8 @@
         $('document').ready(function(){
             $('#img-load').hide();
             $('#labels').hide();
-            $('#filter_time').hide();
+            $('#filter').hide();
+            $('#reset').hide();
         });
     </script>
 

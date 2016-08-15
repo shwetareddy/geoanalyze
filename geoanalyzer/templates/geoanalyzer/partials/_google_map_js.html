@@ -3,13 +3,15 @@
     var total_trips = 0
     var markers = [];
     var unique_markers = [];
+    var pickup_circles = [];
+    var dropoff_circles = [];
 
     function initMap() {
         map = new google.maps.Map(document.getElementById('map'), {
             zoom: 12,
             center: {lat: 40.769, lng: -73.954}
         });
-        // map.data.loadGeoJson('http://localhost:8005/api/geojson');
+        // map.data.loadGeoJson('/api/geojson');
 
         var drawingManager = new google.maps.drawing.DrawingManager({
             drawingMode: google.maps.drawing.OverlayType.MARKER,
@@ -35,8 +37,8 @@
                 lats.push(coordinates[i].lat());
                 lngs.push(coordinates[i].lng());
             }
-            console.log("http://localhost:8005/api/trips?north="+Math.max(...lats)+"&south="+Math.min(...lats)+"&east="+Math.max(...lngs)+"&west="+Math.min(...lngs));
-            $.getJSON( "http://localhost:8005/api/trips?north="+Math.max(...lats)+"&south="+Math.min(...lats)+"&east="+Math.max(...lngs)+"&west="+Math.min(...lngs), function( data ) {
+            console.log("/api/trips?north="+Math.max(...lats)+"&south="+Math.min(...lats)+"&east="+Math.max(...lngs)+"&west="+Math.min(...lngs));
+            $.getJSON( "/api/trips?north="+Math.max(...lats)+"&south="+Math.min(...lats)+"&east="+Math.max(...lngs)+"&west="+Math.min(...lngs), function( data ) {
 
                 for (i = 0; i < data.trips.length; i++) { 
                     pickup_dup_flg = 0;
@@ -103,23 +105,38 @@
                 for (i = 0; i < unique_markers.length ; i++) {
                     console.log(unique_markers[i].center);
                     console.log(unique_markers[i].pickup_count);
-                  // Add the circle for this city to the map.
-                  var locationCircle = new google.maps.Circle({
-                    strokeColor: '#FF0000',
-                    strokeOpacity: 0.8,
-                    strokeWeight: 2,
-                    fillColor: '#FF0000',
-                    fillOpacity: 0.35,
-                    map: map,
-                    center: unique_markers[i].center,
-                    radius: unique_markers[i].pickup_count * 100
-                  });
+                    var pickupCircle = new google.maps.Circle({
+                        strokeColor: '#FF0000',
+                        strokeOpacity: 0.8,
+                        strokeWeight: 2,
+                        fillColor: '#FF0000',
+                        fillOpacity: 0.35,
+                        map: map,
+                        visible: false,
+                        center: unique_markers[i].center,
+                        radius: unique_markers[i].pickup_count * 100
+                    });
+                    pickup_circles.push(pickupCircle);
+
+                    var dropoffCircle = new google.maps.Circle({
+                        strokeColor: 'green',
+                        strokeOpacity: 0.8,
+                        strokeWeight: 2,
+                        fillColor: 'green',
+                        fillOpacity: 0.35,
+                        map: map,
+                        visible: false,
+                        center: unique_markers[i].center,
+                        radius: unique_markers[i].dropoff_count * 100
+                    });
+                    dropoff_circles.push(dropoffCircle);
                 }
 
                 $('#total').text(total_trips);
                 $('#labels').show();
                 $('#chart').hide();
-                $('#filter_time').show();
+                $('#filter').show();
+                $('#reset').show();
                 $('#img-load').hide();
             });
         });
@@ -135,6 +152,14 @@
                 marker.setVisible(false);
             }
         }
+        for (i = 0; i < dropoff_circles.length ; i++) {
+            circle = dropoff_circles[i];
+            circle.setVisible(false);
+        }
+        for (i = 0; i < pickup_circles.length ; i++) {
+            circle = pickup_circles[i];
+            circle.setVisible(false);
+        }
         $('#img-load').hide();
     }
 
@@ -143,6 +168,26 @@
         for (i = 0; i < markers.length ; i++) {
             marker = markers[i];
             marker.setVisible(false);
+        }
+        if(maptype == 'pickup'){
+            for (i = 0; i < dropoff_circles.length ; i++) {
+                circle = dropoff_circles[i];
+                circle.setVisible(false);
+            }
+            for (i = 0; i < pickup_circles.length ; i++) {
+                circle = pickup_circles[i];
+                circle.setVisible(true);
+            }
+        }
+        if(maptype == 'dropoff'){
+            for (i = 0; i < pickup_circles.length ; i++) {
+                circle = pickup_circles[i];
+                circle.setVisible(false);
+            }
+            for (i = 0; i < dropoff_circles.length ; i++) {
+                circle = dropoff_circles[i];
+                circle.setVisible(true);
+            }
         }
         
         $('#img-load').hide();
