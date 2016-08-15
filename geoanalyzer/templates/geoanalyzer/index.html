@@ -46,24 +46,40 @@
             </div>
             <div class="row">
                 <div class="col-sm-12 col-md-8">
-
-                    <select id="filter_time" onchange="filterMarkers(this.value);">
-                        <option value="">Please select category</option>
-                        <option value="morning">Morning (6am to 11:59am)</option>
-                        <option value="afternoon">Afternoon (12pm to 3:59pm)</option>
-                        <option value="evening">Evening (4pm to 8:59pm)</option>
-                        <option value="night">Night (9pm to 5:59am)</option>
-                    </select>
+                    <img src="http://www.watchsleuth.com/images/graphics/Loading.png" id="img-load">
                     <div id="map"></div>
                     {% include 'geoanalyzer/partials/_google_map_js.html' %}
                 </div>
                 <div class="col-sm-12 col-md-4">
-                    <h3>Total number of trips: <span id="total">{{ total_trips }}</span></h3>
+                    <h3>Total trips in the region: <span id="total">{{ total_trips }}</span></h3>
 
                     <div id="labels">
                         <h4>Labels</h4>
                         <img src="http://maps.google.com/mapfiles/ms/icons/red-dot.png" /> Pickup Points
+                        <br/>
                         <img src="http://maps.google.com/mapfiles/ms/icons/green-dot.png" /> Dropoff Points
+                        <br/>
+                        <img src="http://maps.google.com/mapfiles/ms/icons/blue-dot.png" /> Pickup and Dropoff Points
+                    </div>
+
+                    <div id="filter_time">
+                        <h4>Filters</h4>
+                        <select id="select_time" onchange="filterMarkers(this.value);">
+                            <option value="">Please select category</option>
+                            <option value="morning">Morning (6am to 11:59am)</option>
+                            <option value="afternoon">Afternoon (12pm to 3:59pm)</option>
+                            <option value="evening">Evening (4pm to 8:59pm)</option>
+                            <option value="night">Night (9pm to 5:59am)</option>
+                        </select>
+
+                        <h4>Common Pickups and Dropoffs</h4>
+                        <select id="common" onchange="bubbleMap(this.value);">
+                            <option value="">Please select category</option>
+                            <option value="pickup">Most Common Pickups</option>
+                            <option value="dropoff">Most Comman drop offs</option>
+                        </select>
+
+                        <button class="btn btn-primary">Reset</button>
                     </div>
 
                     <div id="chart"></div>
@@ -117,6 +133,7 @@
 
     <script type="text/javascript">
         $('document').ready(function(){
+            $('#img-load').hide();
             $('#labels').hide();
             $('#filter_time').hide();
         });

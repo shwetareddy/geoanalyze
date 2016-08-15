@@ -35,7 +35,6 @@ def trips(request):
 		pickup_longitude__lte=east, dropoff_longitude__lte=east,
 		pickup_longitude__gte=west, dropoff_longitude__gte=west
 	)
-	print points.query
 	json = {
 		"trips": []
     }

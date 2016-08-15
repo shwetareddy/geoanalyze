@@ -2,3 +2,12 @@
     width: 100%;
     height: 600px;
 }
+
+#img-load {
+	width: 50%;
+	height: 50%;
+	position: absolute;
+	top: 10%;
+	left: 50%;
+	z-index: 999;
+}

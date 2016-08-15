@@ -2,6 +2,8 @@
     var map;
     var total_trips = 0
     var markers = [];
+    var unique_markers = [];
+
     function initMap() {
         map = new google.maps.Map(document.getElementById('map'), {
             zoom: 12,
@@ -23,54 +25,124 @@
         drawingManager.setMap(map);
 
         google.maps.event.addListener(drawingManager, 'polygoncomplete', function(polygon) {
-            var coordinates = (polygon.getPath().getArray());
+            $('#img-load').show();
+            drawingManager.setMap(null);
 
-            $.getJSON( "http://localhost:8005/api/trips", function( data ) {
-                
+            var coordinates = (polygon.getPath().getArray());
+            lats = []
+            lngs = []
+            for (i = 0;i < coordinates.length; i++) { 
+                lats.push(coordinates[i].lat());
+                lngs.push(coordinates[i].lng());
+            }
+
+            $.getJSON( "http://localhost:8005/api/trips?north="+Math.max(...lats)+"&south="+Math.min(...lats)+"&east="+Math.max(...lngs)+"&west="+Math.min(...lngs), function( data ) {
+
                 for (i = 0; i < data.trips.length; i++) { 
+                    pickup_dup_flg = 0;
+                    dropoff_dup_flg = 0;
 
                     var pickup_point = new google.maps.LatLng(data.trips[i].pickup[1], data.trips[i].pickup[0]);
                     var dropoff_point = new google.maps.LatLng(data.trips[i].dropoff[1], data.trips[i].dropoff[0]);
                     
                     if(google.maps.geometry.poly.containsLocation(pickup_point, polygon) && google.maps.geometry.poly.containsLocation(dropoff_point, polygon)){
+                        
                         var pickup_marker = new google.maps.Marker({
                             position: pickup_point,
                             icon: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png',
-                            category: data.trips[i].time,
+                            time: data.trips[i].time,
+                            center: {lat: data.trips[i].pickup[1], lng: data.trips[i].pickup[0]},
+                            pickup_count: 1,
+                            dropoff_count: 0,
                             map: map
                         });
+                        
+                        //Find duplicate marker
+                        for (j = 0; j < unique_markers.length; j++) {
+                            if (markers[j].getPosition().equals(pickup_point)) {
+                                pickup_marker['icon'] = 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png';
+                                pickup_dup_flg = 1;
+                                markers[j]['pickup_count']++;
+                            }
+                        }
+                        
+                        markers.push(pickup_marker);
+                        if(pickup_dup_flg == 0){
+                            unique_markers.push(pickup_marker);
+                        }
 
                         var dropoff_marker = new google.maps.Marker({
                             position: dropoff_point,
                             icon: 'http://maps.google.com/mapfiles/ms/icons/green-dot.png',
-                            category: data.trips[i].time,
+                            time: data.trips[i].time,
+                            center: {lat: data.trips[i].pickup[1], lng: data.trips[i].pickup[0]},
+                            pickup_count: 0,
+                            dropoff_count: 1,
                             map: map
                         });
 
-                        markers.push(pickup_marker);
+                        for (k = 0; k < unique_markers.length; k++) {
+                            if (markers[k].getPosition().equals(dropoff_point)) {
+                                dropoff_marker['icon'] = 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png';
+                                dropoff_dup_flg = 1;
+                                markers[k]['dropoff_count']++;
+                            }
+                        }
                         markers.push(dropoff_marker);
+                        if(dropoff_dup_flg == 0){
+                            unique_markers.push(dropoff_marker);
+                        }
 
                         total_trips = total_trips + 1;
                     }
+                }
+
+                for (i = 0; i < unique_markers.length ; i++) {
+                    console.log(unique_markers[i].center);
+                    console.log(unique_markers[i].pickup_count);
+                  // Add the circle for this city to the map.
+                  var locationCircle = new google.maps.Circle({
+                    strokeColor: '#FF0000',
+                    strokeOpacity: 0.8,
+                    strokeWeight: 2,
+                    fillColor: '#FF0000',
+                    fillOpacity: 0.35,
+                    map: map,
+                    center: unique_markers[i].center,
+                    radius: unique_markers[i].pickup_count * 100
+                  });
                 }
 
                 $('#total').text(total_trips);
                 $('#labels').show();
                 $('#chart').hide();
                 $('#filter_time').show();
+                $('#img-load').hide();
             });
         });
     }
-    filterMarkers = function (category) {
-        for (i = 0; i < total_trips * 2; i++) {
+    filterMarkers = function (timefilter) {
+        $('#img-load').show();
+        for (i = 0; i < markers.length; i++) {
             marker = markers[i];
-            if (marker.category == category || category.length === 0) {
+            if (marker.time == timefilter || timefilter.length === 0) {
                 marker.setVisible(true);
             }
             else {
                 marker.setVisible(false);
             }
         }
+        $('#img-load').hide();
+    }
+
+    bubbleMap = function (maptype) {
+        $('#img-load').show();
+        for (i = 0; i < markers.length ; i++) {
+            marker = markers[i];
+            marker.setVisible(false);
+        }
+        
+        $('#img-load').hide();
     }
 </script>
 <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCv2kIi654g_sa36wBzenqxGWY2LzDu148&libraries=drawing,geometry&callback=initMap">
