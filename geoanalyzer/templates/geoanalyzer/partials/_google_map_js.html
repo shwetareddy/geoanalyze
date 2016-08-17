@@ -37,7 +37,7 @@
                 lats.push(coordinates[i].lat());
                 lngs.push(coordinates[i].lng());
             }
-            console.log("/api/trips?north="+Math.max(...lats)+"&south="+Math.min(...lats)+"&east="+Math.max(...lngs)+"&west="+Math.min(...lngs));
+
             $.getJSON( "/api/trips?north="+Math.max(...lats)+"&south="+Math.min(...lats)+"&east="+Math.max(...lngs)+"&west="+Math.min(...lngs), function( data ) {
 
                 for (i = 0; i < data.trips.length; i++) { 
@@ -48,7 +48,7 @@
                     var dropoff_point = new google.maps.LatLng(data.trips[i].dropoff[1], data.trips[i].dropoff[0]);
                     
                     if(google.maps.geometry.poly.containsLocation(pickup_point, polygon) && google.maps.geometry.poly.containsLocation(dropoff_point, polygon)){
-                        console.log('p-lat:'+ data.trips[i].pickup[1]+', lng: '+data.trips[i].pickup[0]);
+                        
                         var pickup_marker = new google.maps.Marker({
                             position: pickup_point,
                             icon: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png',
@@ -59,7 +59,7 @@
                             map: map
                         });
                         
-                        //Find duplicate marker
+                        //Find duplicate marker and increment the count
                         for (j = 0; j < unique_markers.length; j++) {
                             if (markers[j].getPosition().equals(pickup_point)) {
                                 pickup_marker['icon'] = 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png';
@@ -67,13 +67,11 @@
                                 markers[j]['pickup_count']++;
                             }
                         }
-                        console.log(pickup_dup_flg+"pickup flg");
                         markers.push(pickup_marker);
                         if(pickup_dup_flg == 0){
-                            console.log("pick");
                             unique_markers.push(pickup_marker);
                         }
-                        console.log('d-lat:'+ data.trips[i].dropoff[1]+', lng: '+data.trips[i].dropoff[0]);
+
                         var dropoff_marker = new google.maps.Marker({
                             position: dropoff_point,
                             icon: 'http://maps.google.com/mapfiles/ms/icons/green-dot.png',
@@ -84,6 +82,7 @@
                             map: map
                         });
 
+                        //Find duplicate marker and increment the count
                         for (k = 0; k < unique_markers.length; k++) {
                             if (markers[k].getPosition().equals(dropoff_point)) {
                                 dropoff_marker['icon'] = 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png';
@@ -91,10 +90,8 @@
                                 markers[k]['dropoff_count']++;
                             }
                         }
-                        console.log(dropoff_dup_flg+"drop flg");
                         markers.push(dropoff_marker);
                         if(dropoff_dup_flg == 0){
-                            console.log('in drop');
                             unique_markers.push(dropoff_marker);
                         }
 
@@ -102,9 +99,8 @@
                     }
                 }
 
+                //Create bubble chart
                 for (i = 0; i < unique_markers.length ; i++) {
-                    console.log(unique_markers[i].center);
-                    console.log(unique_markers[i].pickup_count);
                     var pickupCircle = new google.maps.Circle({
                         strokeColor: '#FF0000',
                         strokeOpacity: 0.8,
@@ -141,6 +137,7 @@
             });
         });
     }
+    
     filterMarkers = function (timefilter) {
         $('#img-load').show();
         for (i = 0; i < markers.length; i++) {
