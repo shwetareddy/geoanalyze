@@ -25,4 +25,4 @@ Project is host at [http://shwetareddy.pythonanywhere.com/](http://shwetareddy.p
 - Spatial Databse or fields
 - Cache queries
 - Map APIs/Interface without quoata limit
-- 
+- Better design
